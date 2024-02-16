@@ -9,11 +9,12 @@ import (
 )
 
 type FeedHandlers struct {
-	feedSrv *services.FeedService
+	feedSrv       *services.FeedService
+	feedFollowSrv *services.FeedFollowService
 }
 
-func NewFeedHandlers(feedSrv *services.FeedService) *FeedHandlers {
-	return &FeedHandlers{feedSrv: feedSrv}
+func NewFeedHandlers(feedSrv *services.FeedService, feedFollowSrv *services.FeedFollowService) *FeedHandlers {
+	return &FeedHandlers{feedSrv: feedSrv, feedFollowSrv: feedFollowSrv}
 }
 
 func (fh *FeedHandlers) HandleCreate(w http.ResponseWriter, r *http.Request, user *entity.User) {
@@ -36,5 +37,36 @@ func (fh *FeedHandlers) HandleCreate(w http.ResponseWriter, r *http.Request, use
 		return
 	}
 
-	response.JSON(w, http.StatusCreated, newFeed)
+	newFeedFollow, err := fh.feedFollowSrv.Create(&entity.FeedFollow{
+		UserID: user.ID,
+		FeedID: newFeed.ID,
+	})
+
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "failed to create a feed follow")
+
+		return
+	}
+
+	resp := struct {
+		Feed       *entity.Feed       `json:"feed"`
+		FeedFollow *entity.FeedFollow `json:"feed_follow"`
+	}{
+		Feed:       newFeed,
+		FeedFollow: newFeedFollow,
+	}
+
+	response.JSON(w, http.StatusCreated, resp)
+}
+
+func (fh *FeedHandlers) HandleGetAll(w http.ResponseWriter, _ *http.Request) {
+	feeds, err := fh.feedSrv.GetAll()
+
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "failed to get feeds")
+
+		return
+	}
+
+	response.JSON(w, http.StatusOK, feeds)
 }

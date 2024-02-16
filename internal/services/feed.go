@@ -51,3 +51,19 @@ func (fs *FeedService) Create(feed *entity.Feed) (*entity.Feed, error) {
 
 	return newFeed, nil
 }
+
+func (fs *FeedService) GetAll() ([]*entity.Feed, error) {
+	dbFeeds, err := fs.db.GetAllFeeds(fs.ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	feeds := make([]*entity.Feed, len(dbFeeds))
+
+	for i, dbFeed := range dbFeeds {
+		feeds[i] = converter.ToFeedFromDB(dbFeed)
+	}
+
+	return feeds, nil
+}
