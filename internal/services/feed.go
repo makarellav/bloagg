@@ -67,3 +67,26 @@ func (fs *FeedService) GetAll() ([]*entity.Feed, error) {
 
 	return feeds, nil
 }
+
+func (fs *FeedService) GetNextFeeds(limit int) ([]*entity.Feed, error) {
+	dbFeeds, err := fs.db.GetNextFeedsToFetch(fs.ctx, int32(limit))
+
+	if err != nil {
+		return nil, err
+	}
+
+	feeds := make([]*entity.Feed, len(dbFeeds))
+
+	for i, feed := range dbFeeds {
+		feeds[i] = converter.ToFeedFromDB(feed)
+	}
+
+	return feeds, nil
+}
+
+func (fs *FeedService) MarkFeedFetched(ID uuid.UUID) error {
+	return fs.db.MarkFeedFetched(fs.ctx, pgtype.UUID{
+		Bytes: ID,
+		Valid: true,
+	})
+}

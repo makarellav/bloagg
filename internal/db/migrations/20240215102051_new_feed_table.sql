@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE feeds
+CREATE TABLE IF NOT EXISTS feeds
 (
     id         UUID PRIMARY KEY,
     created_at TIMESTAMP   NOT NULL,

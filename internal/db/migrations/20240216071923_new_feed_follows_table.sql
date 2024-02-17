@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE feed_follows
+CREATE TABLE IF NOT EXISTS feed_follows
 (
     id         UUID PRIMARY KEY,
     user_id    UUID REFERENCES users (id) ON DELETE CASCADE,
